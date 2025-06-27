@@ -33,4 +33,13 @@ if( NOT TARGET Cinder-KCB2 )
 		${KINECT_LIB_DIR}/x64/kinect20.lib
 		${KINECT_LIB_DIR}/x64/Kinect20.Face.lib
 	)
+
+	add_custom_command( TARGET ${PROJECT_NAME} POST_BUILD
+		COMMAND ${CMAKE_COMMAND} -E copy ${Cinder-KCB2_LIB_PATH}/x64/KCBv2.dll ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}/$<$<CONFIG:Debug>:Debug>$<$<CONFIG:Release>:Release>$<$<CONFIG:RelWithDebInfo>:RelWithDebInfo>/
+		COMMENT "Copied KCBv2.dll."
+	)
+	add_custom_command( TARGET ${PROJECT_NAME} POST_BUILD
+		COMMAND ${CMAKE_COMMAND} -E copy ${KINECT_LIB_DIR}/../bin/Kinect20.Face.dll ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}/$<$<CONFIG:Debug>:Debug>$<$<CONFIG:Release>:Release>$<$<CONFIG:RelWithDebInfo>:RelWithDebInfo>/
+		COMMENT "Copied Kinect20.Face.dll."
+	)
 endif()
