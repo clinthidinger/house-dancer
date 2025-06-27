@@ -1,6 +1,6 @@
 #include <cinder/app/App.h>
 #include <cinder/gl/Texture.h>
-#include <cinder/params/Params.h>
+//#include <cinder/params/Params.h>
 #include <cinder/app/RendererGl.h>
 #include <cinder/gl/gl.h>
 #include <cinder/Utilities.h>
@@ -8,6 +8,10 @@
 #include <cinder/Log.h>
 #include <imgui/imgui_internal.h>
 #include <Kinect2.h>
+#include "LinkWrapper.h"
+
+#include "fonts/RobotoRegular.h"
+//#include "fonts/FontAwesome-tweak.h"
 
 class HouseDancerApp : public ci::app::App
 {
@@ -15,15 +19,24 @@ public:
 	void draw() override;
 	void setup() override;
 	void update() override;
+
 private:
-	Kinect2::BodyFrame			mBodyFrame;
-	ci::Channel8uRef			mChannelBodyIndex;
-	//ci::Channel16uRef			mChannelDepth;
-	Kinect2::DeviceRef			mDevice;
+	void updateImGui();
+
+	Kinect2::BodyFrame mBodyFrame;
+	ci::Channel8uRef mChannelBodyIndex;
+	//ci::Channel16uRef	mChannelDepth;
+	Kinect2::DeviceRef mDevice;
+	LinkWrapper mLinkWrapper;
 
 	float						mFrameRate;
 	bool						mFullScreen;
-	ci::params::InterfaceGlRef	mParams;
+	//ci::params::InterfaceGlRef	mParams;
+
+	ImFont *mFont{ nullptr };
+	//ImFont *mFontAwesomeTweaked{ nullptr };
+	static constexpr const int DefaultFontSize{ 20 };
+	int mFontSize{ DefaultFontSize };
 };
 
 void HouseDancerApp::draw()
@@ -96,7 +109,7 @@ void HouseDancerApp::draw()
 		ci::gl::popMatrices();
 	}
 
-	mParams->draw();
+	//mParams->draw();
 }
 
 void HouseDancerApp::setup()
@@ -120,11 +133,14 @@ void HouseDancerApp::setup()
 	// } );
 	
 	ImGui::Initialize();
+	ImFontConfig fontConfig;
+	fontConfig.FontDataOwnedByAtlas = false;
+	mFont = ImGui::GetIO().Fonts->AddFontFromMemoryTTF( const_cast< unsigned char * >( RobotoRegular ), RobotoRegularLength, mFontSize, &fontConfig );
 
-	mParams = ci::params::InterfaceGl::create( "Params", ci::ivec2( 200, 100 ) );
-	mParams->addParam( "Frame rate",	&mFrameRate,			"", true );
-	mParams->addParam( "Full screen",	&mFullScreen ).key( "f" );
-	mParams->addButton( "Quit",			[ & ]() { quit(); },	"key=q" );
+	//mParams = ci::params::InterfaceGl::create( "Params", ci::ivec2( 200, 100 ) );
+	//mParams->addParam( "Frame rate",	&mFrameRate,			"", true );
+	//mParams->addParam( "Full screen",	&mFullScreen ).key( "f" );
+	//mParams->addButton( "Quit",			[ & ]() { quit(); },	"key=q" );
 }
 
 void HouseDancerApp::update()
@@ -136,7 +152,33 @@ void HouseDancerApp::update()
 		setFullScreen( mFullScreen );
 		mFullScreen = isFullScreen();
 	}
+
+	updateImGui();
 }
+
+void HouseDancerApp::updateImGui()
+{
+	ImGui::SetCurrentFont( mFont );
+
+	ImGui::Begin( "Controls" );
+	ImGui::Text( "Frame Rate: %.2f", mFrameRate );
+	ImGui::Checkbox( "Is FullScreen", &mFullScreen );
+	ImGui::Text( "Peers: %d", mLinkWrapper.getNumPeers() );
+	if( ImGui::Button( "Connect" ) )
+	{
+		mLinkWrapper.setIsEnabled( true );
+	}
+
+	double phase = 0.0;
+	const float beat = mLinkWrapper.getBeatAndPhase( phase );
+	const double tempo = mLinkWrapper.getTempo();
+	ImGui::Text( "Tempo: %.2f", tempo );
+	ImGui::Text( "Beat: %.2f", beat );
+	ImGui::Text( "Phase: %.2f", phase );
+
+	ImGui::End();
+}
+
 
 CINDER_APP( HouseDancerApp, ci::app::RendererGl, []( ci::app::App::Settings* settings )
 {
