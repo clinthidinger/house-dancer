@@ -28,6 +28,8 @@ include( "${CINDER_PATH}/proj/cmake/modules/cinderMakeApp.cmake" )
 
 set(SRC_FILES
 	src/HouseDancerApp.cpp
+	src/SavitzkyGolayFilter.h
+	src/SavitzkyGolayFilter.cpp
 	#include/Resources.h
 )
 
