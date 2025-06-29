@@ -156,8 +156,8 @@ ci::Colorf HouseDancerApp::getRingColor( double fract )
 	{
 		return ci::Colorf( 0.1f, 1.0f, 0.4f );
 	}
-	//return ci::Colorf( 1.0f, 0.1f, 0.0f );
-	return ci::Colorf( 0.0f, 0.0f, 0.0f );
+	return ci::Colorf( 1.0f, 0.1f, 0.0f );
+	//return ci::Colorf( 0.0f, 0.0f, 0.0f );
 }
 
 void HouseDancerApp::draw()
@@ -438,8 +438,9 @@ void HouseDancerApp::detectKneeRaise( BodyTrackState &trackState, const ci::vec3
 
 	if( knee.isUp )
 	{
+		constexpr float KneeVelThresh = 0.005f;
 		const float vel = kneePos.y - knee.yPrevPos;
-		if( !knee.hasEmittedRing && vel < 0.0f && knee.yPrevVel < 0.0f )
+		if( !knee.hasEmittedRing && ( vel < KneeVelThresh || kneePos.y < kneeDownThresh ) )//vel < 0.0f && knee.yPrevVel < 0.0f )
 		{
 			// emit ring;
 			mKneeRings.push_back( std::make_unique<AnimatedRing>( mLinkWrapper.getTempo(), kneePos, fract( mLinkWrapper.getBeat() ) ) );
